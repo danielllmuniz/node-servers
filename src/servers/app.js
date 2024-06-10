@@ -1,6 +1,7 @@
 const http = require("node:http")
 const json = require("./middlewares/json")
 const routes = require("./routes")
+const extractQueryParams = require("./utils/extract-query-params")
 
 
 const server = http.createServer(async (req, res) => {
@@ -15,7 +16,11 @@ const server = http.createServer(async (req, res) => {
   if (route) {
     const routeParams = req.url.match(route.path)
 
-    req.params = { ...routeParams.groups }
+    const { query, ...params } = routeParams.groups 
+    
+    req.params = params
+
+    req.query = extractQueryParams(query)
 
     return route.handler(req, res)
   }
