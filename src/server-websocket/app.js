@@ -18,13 +18,26 @@
 
 const WebSocket = require('ws')
 const port = 8080
+const {randomUUID} = require('crypto')
 
 const wss = new WebSocket.Server({ port })
 
 wss.on('connection', (ws) => {
+  ws.id = randomUUID()
+  console.log(`New client connected on ${ws.id}`)
   ws.on('message', (message) => {
-    console.log(`${message}`)
-    ws.send('received')
+    console.log(`Received: ${message}`)
+
+    
+    wss.clients.forEach(client => {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message)
+      }
+    })
+  })
+
+  ws.on('close', () => {
+    console.log('Client has disconnected')
   })
 })
 
